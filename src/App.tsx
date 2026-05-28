@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, GitBranch, Radio } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, GitBranch, Radio } from 'lucide-react'
 import './App.css'
 import { ChipSynthEngine, renderSongToWav } from './audio/chipSynth'
 import { createDemoSong, parseMidiFile } from './audio/midi'
@@ -9,6 +9,7 @@ import { Mixer } from './components/Mixer'
 import { Oscilloscope } from './components/Oscilloscope'
 import { SynthControls } from './components/SynthControls'
 import { Transport } from './components/Transport'
+import { CHIP_MODES } from './types'
 import type { ChannelMix, MidiSong, RenderSettings, TransportState } from './types'
 
 const DEFAULT_SETTINGS: RenderSettings = {
@@ -148,6 +149,12 @@ function App() {
     setError(null)
   }
 
+  const cycleMode = () => {
+    const currentIndex = CHIP_MODES.indexOf(settings.mode)
+    const nextMode = CHIP_MODES[(currentIndex + 1) % CHIP_MODES.length]
+    setSettings({ ...settings, mode: nextMode })
+  }
+
   const exportWav = async () => {
     try {
       setError(null)
@@ -176,84 +183,175 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="top-strip">
-        <div className="brand-lockup">
-          <Radio aria-hidden="true" size={25} />
-          <div>
-            <h1>MIDIBOI</h1>
-            <span>GXSCC-style browser synth</span>
+      <section className="device-shell" aria-label="MIDIBOI handheld interface">
+        <div className="shell-top">
+          <span className="shell-screw top-left" aria-hidden="true" />
+          <span className="shell-screw top-right" aria-hidden="true" />
+          <div className="cartridge-slot">
+            <div className="brand-lockup">
+              <Radio aria-hidden="true" size={25} />
+              <div>
+                <h1>MIDIBOI</h1>
+                <span>DELPERCIO.DEV/MIDIBOI</span>
+              </div>
+            </div>
+            <span className="cart-label">SCC SOUND CART</span>
+          </div>
+          <a
+            aria-label="MIDIBOI GitHub"
+            className="github-link"
+            href="https://github.com/delpercio/midiboi"
+            rel="noreferrer"
+            target="_blank"
+          >
+            <GitBranch aria-hidden="true" size={18} />
+            Repo
+          </a>
+        </div>
+
+        <div className="screen-bezel">
+          <div className="bezel-header">
+            <span className="power-led" aria-hidden="true" />
+            <span>POWER</span>
+            <strong>DOT MATRIX CHIPSOUND</strong>
+          </div>
+
+          {error ? (
+            <div className="error-line" role="alert">
+              <AlertTriangle aria-hidden="true" size={17} />
+              {error}
+            </div>
+          ) : null}
+
+          <div className="workbench">
+            <aside className="left-rail">
+              <FileDrop
+                fileSize={fileSize}
+                onDemo={loadDemo}
+                onFile={(file) => void loadFile(file)}
+                song={song}
+              />
+              <Transport
+                duration={duration}
+                onExport={() => void exportWav()}
+                onPause={pausePlayback}
+                onPlay={() => void startPlayback(position)}
+                onSeek={seek}
+                onStop={stopPlayback}
+                position={position}
+                transportState={transportState}
+              />
+            </aside>
+
+            <section className="center-stage">
+              <Oscilloscope
+                analyser={analyser}
+                position={position}
+                settings={settings}
+                song={song}
+                transportState={transportState}
+              />
+              <Mixer channels={song.channels} mixer={mixer} onChange={setMixer} />
+            </section>
+
+            <aside className="right-rail">
+              <SynthControls onChange={setSettings} settings={settings} />
+              <section className="data-panel">
+                <div className="panel-heading">
+                  <span>MIDI</span>
+                  <strong>{song.summary.timeSignature}</strong>
+                </div>
+                <div className="summary-grid wide">
+                  <span>PPQ</span>
+                  <strong>{song.summary.ppq}</strong>
+                  <span>Tracks</span>
+                  <strong>{song.channels.length}</strong>
+                  <span>Mode</span>
+                  <strong>{settings.mode.toUpperCase()}</strong>
+                  <span>Status</span>
+                  <strong>{transportState}</strong>
+                </div>
+              </section>
+            </aside>
           </div>
         </div>
-        <a
-          aria-label="MIDIBOI GitHub"
-          className="github-link"
-          href="https://github.com/delpercio/midiboi"
-          rel="noreferrer"
-          target="_blank"
-        >
-          <GitBranch aria-hidden="true" size={18} />
-          Repo
-        </a>
-      </header>
 
-      {error ? (
-        <div className="error-line" role="alert">
-          <AlertTriangle aria-hidden="true" size={17} />
-          {error}
-        </div>
-      ) : null}
+        <div className="hardware-deck" aria-label="Hardware controls">
+          <div className="dpad" aria-label="Playback D-pad">
+            <button
+              aria-label="Seek backward"
+              className="dpad-button dpad-left"
+              onClick={() => seek(position - 5)}
+              type="button"
+            >
+              <ChevronLeft aria-hidden="true" />
+            </button>
+            <button
+              aria-label="Play"
+              className="dpad-button dpad-up"
+              onClick={() => void startPlayback(position)}
+              type="button"
+            >
+              PLAY
+            </button>
+            <button
+              aria-label="Stop"
+              className="dpad-button dpad-down"
+              onClick={stopPlayback}
+              type="button"
+            >
+              STOP
+            </button>
+            <button
+              aria-label="Seek forward"
+              className="dpad-button dpad-right"
+              onClick={() => seek(position + 5)}
+              type="button"
+            >
+              <ChevronRight aria-hidden="true" />
+            </button>
+            <button
+              aria-label="Pause"
+              className="dpad-center"
+              onClick={pausePlayback}
+              type="button"
+            />
+          </div>
 
-      <div className="workbench">
-        <aside className="left-rail">
-          <FileDrop
-            fileSize={fileSize}
-            onDemo={loadDemo}
-            onFile={(file) => void loadFile(file)}
-            song={song}
-          />
-          <Transport
-            duration={duration}
-            onExport={() => void exportWav()}
-            onPause={pausePlayback}
-            onPlay={() => void startPlayback(position)}
-            onSeek={seek}
-            onStop={stopPlayback}
-            position={position}
-            transportState={transportState}
-          />
-        </aside>
+          <div className="system-buttons">
+            <button onClick={loadDemo} type="button">SELECT</button>
+            <button onClick={stopPlayback} type="button">START</button>
+          </div>
 
-        <section className="center-stage">
-          <Oscilloscope
-            analyser={analyser}
-            position={position}
-            settings={settings}
-            song={song}
-            transportState={transportState}
-          />
-          <Mixer channels={song.channels} mixer={mixer} onChange={setMixer} />
-        </section>
+          <div className="speaker-grille" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+          </div>
 
-        <aside className="right-rail">
-          <SynthControls onChange={setSettings} settings={settings} />
-          <section className="data-panel">
-            <div className="panel-heading">
-              <span>MIDI</span>
-              <strong>{song.summary.timeSignature}</strong>
-            </div>
-            <div className="summary-grid wide">
-              <span>PPQ</span>
-              <strong>{song.summary.ppq}</strong>
-              <span>Tracks</span>
-              <strong>{song.channels.length}</strong>
+          <div className="action-cluster">
+            <button
+              className="action-button button-b"
+              onClick={cycleMode}
+              type="button"
+            >
+              <strong>B</strong>
               <span>Mode</span>
-              <strong>{settings.mode.toUpperCase()}</strong>
-              <span>Status</span>
-              <strong>{transportState}</strong>
-            </div>
-          </section>
-        </aside>
-      </div>
+            </button>
+            <button
+              className="action-button button-a"
+              onClick={() => void exportWav()}
+              type="button"
+            >
+              <strong>A</strong>
+              <span>WAV</span>
+            </button>
+          </div>
+        </div>
+      </section>
     </main>
   )
 }

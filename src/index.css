@@ -16,6 +16,7 @@
   --paper: #f8f4e8;
   --red: #ff5f57;
   --shell: #141714;
+  --shell-plastic: #d7d2bd;
   background: #0b0d0b;
   color: var(--paper);
   font-family: var(--font-sans);
@@ -32,9 +33,9 @@
 
 body {
   background:
-    radial-gradient(circle at 18% 12%, rgba(246, 195, 67, 0.12), transparent 22%),
+    radial-gradient(circle at 18% 12%, rgba(246, 195, 67, 0.1), transparent 22%),
     radial-gradient(circle at 86% 4%, rgba(46, 230, 222, 0.12), transparent 24%),
-    #0b0d0b;
+    linear-gradient(135deg, #101410, #07100d 55%, #11130f);
   margin: 0;
   min-width: 320px;
 }
