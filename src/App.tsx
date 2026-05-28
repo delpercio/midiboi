@@ -167,16 +167,35 @@ function App() {
     try {
       setError(null)
       const baseUrl = import.meta.env.BASE_URL || '/'
-      let response = await fetch(`${baseUrl}songs/${songId}.mid`)
-      if (!response.ok) {
-        response = await fetch(`songs/${songId}.mid`)
+      
+      const checkMidiResponse = (res: Response) => {
+        if (!res.ok) return false
+        const contentType = res.headers.get('content-type') || ''
+        // If Vercel rewrites to index.html due to catch-all routing, it returns a 200 OK with HTML content
+        if (contentType.includes('text/html') || contentType.includes('application/xhtml+xml')) {
+          return false
+        }
+        return true
       }
-      if (!response.ok) {
-        response = await fetch(`/songs/${songId}.mid`)
+
+      const cacheBuster = `?cb=${Date.now()}`
+      let response = await fetch(`${baseUrl}songs/${songId}.mid${cacheBuster}`)
+      
+      if (!checkMidiResponse(response)) {
+        response = await fetch(`songs/${songId}.mid${cacheBuster}`)
       }
-      if (!response.ok) {
-        throw new Error(`Failed to load song: ${response.statusText}`)
+      if (!checkMidiResponse(response)) {
+        response = await fetch(`/songs/${songId}.mid${cacheBuster}`)
       }
+      if (!checkMidiResponse(response)) {
+        // Fallback without cache buster just in case
+        response = await fetch(`${baseUrl}songs/${songId}.mid`)
+      }
+      
+      if (!checkMidiResponse(response)) {
+        throw new Error('Could not load a valid MIDI file response.')
+      }
+
       const buffer = await response.arrayBuffer()
       const midi = new Midi(buffer)
       const nextSong = songFromMidi(midi, `${songId}.mid`)
