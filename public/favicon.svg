@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="MIDIBOI">
+  <rect width="256" height="256" rx="24" fill="#101411"/>
+  <path fill="#2ee6de" d="M42 64h172v128H42z"/>
+  <path fill="#101411" d="M58 80h140v96H58z"/>
+  <path fill="#f6c343" d="M74 142h16v18H74zm28-28h16v46h-16zm28 12h16v34h-16zm28-44h16v78h-16z"/>
+  <path fill="#2ee6de" d="M74 96h64v10H74z"/>
+</svg>
