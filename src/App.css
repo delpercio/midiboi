@@ -3,9 +3,11 @@
 .app-shell {
   align-items: center;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  justify-content: flex-start;
   min-height: 100svh;
   padding: 18px;
+  gap: 20px;
 }
 
 .device-shell {
@@ -888,5 +890,305 @@ input[type='range'] {
 
   .button-a {
     transform: translateY(-8px);
+  }
+}
+
+/* -------------------------------------------------------------
+ * Custom KPSCRT styling components for delpercio.dev portfolio match
+ * ------------------------------------------------------------- */
+
+/* Top Telemetry Casing */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 25px;
+  height: 70px;
+  background: var(--panel-bg);
+  border: 2px solid var(--panel-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: relative;
+  box-shadow: 5px 5px 0px rgba(0, 0, 0, 1);
+  margin: 15px auto 10px;
+  width: min(1220px, calc(100vw - 36px));
+  z-index: 100;
+  pointer-events: auto;
+}
+
+.top-bar .cell {
+  display: flex;
+  align-items: center;
+}
+
+.top-bar .title-cell {
+  font-family: var(--font-mono);
+  gap: 12px;
+}
+
+.top-bar .logo {
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  margin: 0;
+  text-shadow: none;
+}
+
+.top-bar .version {
+  font-size: 9px;
+  color: var(--accent-orange);
+  border: 1px solid var(--accent-orange);
+  padding: 1px 4px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.top-bar .portfolio-link {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent-orange);
+  text-decoration: none;
+  border: 1px solid var(--accent-orange);
+  padding: 2px 8px;
+  margin-left: 15px;
+  transition: all 0.12s ease;
+}
+
+.top-bar .portfolio-link:hover {
+  background: var(--accent-orange);
+  color: #ffffff;
+}
+
+.top-bar .status-cell {
+  justify-content: flex-end;
+  gap: 30px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.top-bar .status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.top-bar .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50% !important;
+  background-color: var(--accent-orange);
+  display: inline-block;
+  box-shadow: 0 0 6px var(--accent-orange);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.top-bar .telemetry {
+  display: flex;
+  gap: 6px;
+}
+
+.top-bar .telemetry .label {
+  color: var(--text-secondary);
+}
+
+.top-bar .telemetry .value {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* Mechanical Casing screws */
+.top-bar .screw {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #d8d8d8;
+  border: 1px solid #000000;
+  border-radius: 50% !important;
+  z-index: 5;
+}
+
+.top-bar .screw::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 0; width: 100%; height: 1px;
+  background: #000000;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.top-bar .screw.top-left { top: 6px; left: 6px; }
+.top-bar .screw.top-right { top: 6px; right: 6px; }
+.top-bar .screw.bottom-left { bottom: 6px; left: 6px; }
+.top-bar .screw.bottom-right { bottom: 6px; right: 6px; }
+
+/* Song Selector in FileDrop */
+.song-selector-container {
+  margin: 0 10px 10px;
+  width: calc(100% - 20px);
+}
+
+.song-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.song-select-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--cyan);
+  pointer-events: none;
+  animation: spin-disc 4s linear infinite;
+  z-index: 10;
+}
+
+@keyframes spin-disc {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.song-select {
+  width: 100%;
+  appearance: none;
+  background: #172112;
+  border: 1px solid var(--line);
+  color: var(--cyan);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  height: 38px;
+  outline: none;
+  padding: 0 10px 0 32px;
+  cursor: pointer;
+  box-shadow: inset 0 0 10px rgba(0, 187, 255, 0.15);
+}
+
+.song-select:hover,
+.song-select:focus-visible {
+  border-color: var(--cyan);
+  box-shadow: 0 0 8px rgba(0, 187, 255, 0.3);
+}
+
+.song-select option {
+  background: #172112;
+  color: var(--cyan);
+}
+
+/* Retheming Gameboy display elements to use solid retro-industrial aesthetic */
+.file-drop,
+.transport-panel,
+.synth-panel,
+.scope-panel,
+.mixer-panel,
+.data-panel {
+  border: 2px solid #000000 !important;
+  box-shadow: 3px 3px 0px rgba(0, 0, 0, 1);
+  background: rgba(255, 255, 255, 0.45) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: all 0.12s ease;
+}
+
+.file-drop:hover,
+.transport-panel:hover,
+.synth-panel:hover,
+.scope-panel:hover,
+.mixer-panel:hover,
+.data-panel:hover {
+  box-shadow: 4px 4px 0px var(--accent-orange);
+}
+
+.panel-heading {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-bottom: 2px solid #000000 !important;
+}
+
+.drop-target {
+  border: 2px solid #000000 !important;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 1);
+  background: #ffffff !important;
+  color: #000000 !important;
+  transition: all 0.12s ease;
+}
+
+.drop-target:hover {
+  box-shadow: 3px 3px 0px var(--accent-orange);
+  transform: translate(-1px, -1px);
+}
+
+.drop-target:active {
+  box-shadow: 1px 1px 0px rgba(0, 0, 0, 1);
+  transform: translate(1px, 1px);
+}
+
+.icon-button,
+.export-button,
+.mode-button,
+.ghost-action {
+  border: 1px solid #000000 !important;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 1);
+  background: #ffffff !important;
+  color: #000000 !important;
+  transition: all 0.12s ease;
+}
+
+.icon-button:hover,
+.export-button:hover,
+.mode-button:hover,
+.ghost-action:hover {
+  box-shadow: 3px 3px 0px var(--accent-orange);
+  transform: translate(-1px, -1px);
+}
+
+.mode-button.active {
+  background: #000000 !important;
+  color: var(--accent-yellow) !important;
+}
+
+.icon-button.primary {
+  background: var(--accent-orange) !important;
+  color: #ffffff !important;
+}
+
+/* Slider and inputs KPSCRT polish */
+input[type='range'] {
+  accent-color: var(--accent-orange);
+}
+
+/* Responsiveness overrides for Mobile Top Bar */
+@media (max-width: 1024px) {
+  .top-bar {
+    height: auto;
+    padding: 12px 20px;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  
+  .top-bar .title-cell {
+    flex-direction: column;
+    gap: 6px;
+    align-items: flex-start;
+  }
+  
+  .top-bar .portfolio-link {
+    margin-left: 0;
+    margin-top: 4px;
+    align-self: flex-start;
+  }
+  
+  .top-bar .status-cell {
+    justify-content: space-between;
+    margin-top: 6px;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 6px;
   }
 }

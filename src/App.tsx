@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { AlertTriangle, ChevronLeft, ChevronRight, GitBranch, Radio } from 'lucide-react'
+import { AlertTriangle, ChevronLeft, ChevronRight, Radio } from 'lucide-react'
 import './App.css'
 import { ChipSynthEngine, renderSongToWav } from './audio/chipSynth'
-import { createDemoSong, parseMidiFile } from './audio/midi'
+import { Midi } from '@tonejs/midi'
+import { createDemoSong, parseMidiFile, songFromMidi } from './audio/midi'
 import { createInitialMix, getPlaybackDuration } from './audio/transform'
-import { FileDrop } from './components/FileDrop'
+import { FileDrop, SONGS_LIST } from './components/FileDrop'
 import { Mixer } from './components/Mixer'
 import { Oscilloscope } from './components/Oscilloscope'
 import { SynthControls } from './components/SynthControls'
@@ -32,6 +33,8 @@ function App() {
   const [transportState, setTransportState] = useState<TransportState>('idle')
   const [error, setError] = useState<string | null>(null)
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null)
+  const [currentSongId, setCurrentSongId] = useState<string>('demo')
+  const [coords, setCoords] = useState('0.00 / 0.00')
   const engineRef = useRef<ChipSynthEngine | null>(null)
 
   const duration = useMemo(
@@ -122,10 +125,61 @@ function App() {
     }
   }
 
+  useEffect(() => {
+    const handleMouseMove = (event: MouseEvent) => {
+      const x = (event.clientX / window.innerWidth) * 2 - 1
+      const y = -(event.clientY / window.innerHeight) * 2 + 1
+      setCoords(`${x.toFixed(2)} / ${y.toFixed(2)}`)
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
+  const loadDemo = useCallback(() => {
+    stopPlayback()
+    const demo = createDemoSong()
+    setSong(demo)
+    setFileSize(null)
+    setMixer(createInitialMix(demo.channels))
+    setError(null)
+    setCurrentSongId('demo')
+  }, [stopPlayback])
+
+  const loadSongById = useCallback(async (songId: string) => {
+    setCurrentSongId(songId)
+    if (songId === 'demo') {
+      loadDemo()
+      return
+    }
+    try {
+      setError(null)
+      stopPlayback()
+      const url = `${import.meta.env.BASE_URL}songs/${songId}.mid`
+      const response = await fetch(url)
+      if (!response.ok) {
+        throw new Error(`Failed to load song: ${response.statusText}`)
+      }
+      const buffer = await response.arrayBuffer()
+      const midi = new Midi(buffer)
+      const nextSong = songFromMidi(midi, `${songId}.mid`)
+      if (nextSong.notes.length === 0) {
+        throw new Error('This MIDI did not contain any note events.')
+      }
+      setSong(nextSong)
+      setFileSize(buffer.byteLength)
+      setMixer(createInitialMix(nextSong.channels))
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error ? loadError.message : 'The MIDI could not load.',
+      )
+    }
+  }, [stopPlayback, loadDemo])
+
   const loadFile = async (file: File) => {
     try {
       setError(null)
       stopPlayback()
+      setCurrentSongId('custom')
       const nextSong = await parseMidiFile(file)
       if (nextSong.notes.length === 0) {
         throw new Error('That MIDI did not contain any note events.')
@@ -140,13 +194,19 @@ function App() {
     }
   }
 
-  const loadDemo = () => {
-    stopPlayback()
-    const demo = createDemoSong()
-    setSong(demo)
-    setFileSize(null)
-    setMixer(createInitialMix(demo.channels))
-    setError(null)
+  const cycleSongs = () => {
+    const currentIndex = SONGS_LIST.findIndex((s) => s.id === currentSongId)
+    const nextIndex = (currentIndex + 1) % SONGS_LIST.length
+    const nextSong = SONGS_LIST[nextIndex]
+    void loadSongById(nextSong.id)
+  }
+
+  const togglePlayback = () => {
+    if (transportState === 'playing') {
+      pausePlayback()
+    } else {
+      void startPlayback(position)
+    }
   }
 
   const cycleMode = () => {
@@ -182,32 +242,49 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
-      <section className="device-shell" aria-label="MIDIBOI handheld interface">
-        <div className="shell-top">
-          <span className="shell-screw top-left" aria-hidden="true" />
-          <span className="shell-screw top-right" aria-hidden="true" />
-          <div className="cartridge-slot">
-            <div className="brand-lockup">
-              <Radio aria-hidden="true" size={25} />
-              <div>
-                <h1>MIDIBOI</h1>
-                <span>DELPERCIO.DEV/MIDIBOI</span>
-              </div>
-            </div>
-            <span className="cart-label">SCC SOUND CART</span>
-          </div>
-          <a
-            aria-label="MIDIBOI GitHub"
-            className="github-link"
-            href="https://github.com/delpercio/midiboi"
-            rel="noreferrer"
-            target="_blank"
-          >
-            <GitBranch aria-hidden="true" size={18} />
-            Repo
-          </a>
+    <>
+      <div className="te-grid-bg" />
+      <div className="te-laser-axis" />
+      
+      <header className="deck-row top-bar">
+        <div className="screw top-left" />
+        <div className="screw top-right" />
+        <div className="screw bottom-left" />
+        <div className="screw bottom-right" />
+        
+        <div className="cell title-cell">
+          <h1 className="logo">STEVEN DELPERCIO</h1>
+          <span className="version">DEV-SYS // MOD-88</span>
+          <a href="https://delpercio.dev" className="portfolio-link">[ &lt;-- PORTFOLIO HOME ]</a>
         </div>
+        <div className="cell status-cell">
+          <div className="status-indicator">
+            <span className="status-dot" />
+            <span className="status-label">SYSTEM ONLINE</span>
+          </div>
+          <div className="telemetry">
+            <span className="label">COORDS:</span>
+            <span id="coord-val" className="value">{coords}</span>
+          </div>
+        </div>
+      </header>
+
+      <main className="app-shell">
+        <section className="device-shell" aria-label="MIDIBOI handheld interface">
+          <div className="shell-top">
+            <span className="shell-screw top-left" aria-hidden="true" />
+            <span className="shell-screw top-right" aria-hidden="true" />
+            <div className="cartridge-slot">
+              <div className="brand-lockup">
+                <Radio aria-hidden="true" size={25} />
+                <div>
+                  <h1>MIDIBOI</h1>
+                  <span>DELPERCIO.DEV/MIDIBOI</span>
+                </div>
+              </div>
+              <span className="cart-label">SCC SOUND CART</span>
+            </div>
+          </div>
 
         <div className="screen-bezel">
           <div className="bezel-header">
@@ -227,9 +304,10 @@ function App() {
             <aside className="left-rail">
               <FileDrop
                 fileSize={fileSize}
-                onDemo={loadDemo}
                 onFile={(file) => void loadFile(file)}
                 song={song}
+                currentSongId={currentSongId}
+                onSongSelect={(songId) => void loadSongById(songId)}
               />
               <Transport
                 duration={duration}
@@ -319,8 +397,8 @@ function App() {
           </div>
 
           <div className="system-buttons">
-            <button onClick={loadDemo} type="button">SELECT</button>
-            <button onClick={stopPlayback} type="button">START</button>
+            <button onClick={cycleSongs} type="button">SELECT</button>
+            <button onClick={togglePlayback} type="button">START</button>
           </div>
 
           <div className="speaker-grille" aria-hidden="true">
@@ -351,8 +429,9 @@ function App() {
             </button>
           </div>
         </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </>
   )
 }
 
