@@ -22,21 +22,11 @@ export function Mixer({ channels, mixer, onChange }: MixerProps) {
   return (
     <section className="mixer-panel">
       <div className="panel-heading">
-        <span>Channels</span>
-        <strong>{channels.length}/16 active</strong>
+        <span>Console Mixer</span>
+        <strong>{channels.length}/16 channels active</strong>
       </div>
 
-      <div className="mixer-table" role="table" aria-label="Channel mixer">
-        <div className="mixer-row mixer-head" role="row">
-          <span>CH</span>
-          <span>Inst</span>
-          <span>Vol</span>
-          <span>Pan</span>
-          <span>Mute</span>
-          <span>Solo</span>
-          <span>Notes</span>
-        </div>
-
+      <div className="mixer-deck" role="region" aria-label="Console Channel Strips">
         {mixer.map((mix) => {
           const channel = channelMap.get(mix.channel)
           const isActive = Boolean(channel)
@@ -44,61 +34,93 @@ export function Mixer({ channels, mixer, onChange }: MixerProps) {
 
           return (
             <div
-              className={`mixer-row ${isActive ? 'is-active' : 'is-idle'}`}
+              className={`channel-strip ${isActive ? 'is-active' : 'is-idle'}`}
               key={mix.channel}
-              role="row"
               style={{ '--channel-color': color } as CSSProperties}
             >
-              <span className="channel-cell">
-                <i aria-hidden="true" />
-                {channel?.name ?? `CH${(mix.channel + 1).toString().padStart(2, '0')}`}
-              </span>
-              <span>{channel?.instrumentName ?? 'empty'}</span>
-              <input
-                aria-label={`Channel ${mix.channel + 1} volume`}
-                disabled={!isActive}
-                max={1}
-                min={0}
-                onChange={(event) =>
-                  updateChannel(mix.channel, {
-                    volume: Number(event.currentTarget.value),
-                  })
-                }
-                step={0.01}
-                type="range"
-                value={mix.volume}
-              />
-              <input
-                aria-label={`Channel ${mix.channel + 1} pan`}
-                disabled={!isActive}
-                max={1}
-                min={-1}
-                onChange={(event) =>
-                  updateChannel(mix.channel, {
-                    pan: Number(event.currentTarget.value),
-                  })
-                }
-                step={0.01}
-                type="range"
-                value={mix.pan}
-              />
-              <button
-                className={mix.muted ? 'mini-toggle active' : 'mini-toggle'}
-                disabled={!isActive}
-                onClick={() => updateChannel(mix.channel, { muted: !mix.muted })}
-                type="button"
-              >
-                M
-              </button>
-              <button
-                className={mix.solo ? 'mini-toggle active solo' : 'mini-toggle'}
-                disabled={!isActive}
-                onClick={() => updateChannel(mix.channel, { solo: !mix.solo })}
-                type="button"
-              >
-                S
-              </button>
-              <span>{channel?.noteCount ?? 0}</span>
+              {!isActive ? (
+                <div className="blank-plate-text">
+                  EMPTY SLOT {(mix.channel + 1).toString().padStart(2, '0')}
+                </div>
+              ) : (
+                <>
+                  {/* Module Header / LED and Channel Details */}
+                  <div className="strip-header">
+                    <div className="strip-led-row">
+                      <span className="strip-led" aria-hidden="true" />
+                      <span className="strip-num">CH{(mix.channel + 1).toString().padStart(2, '0')}</span>
+                    </div>
+                    <div className="strip-inst" title={channel?.instrumentName}>
+                      {channel?.instrumentName ?? 'empty'}
+                    </div>
+                  </div>
+
+                  {/* Horizontal PAN slider */}
+                  <div className="strip-pan-container">
+                    <label htmlFor={`pan-${mix.channel}`} className="strip-pan-label">
+                      PAN: {mix.pan === 0 ? 'C' : mix.pan > 0 ? `R${Math.round(mix.pan * 10)}` : `L${Math.round(Math.abs(mix.pan) * 10)}`}
+                    </label>
+                    <input
+                      id={`pan-${mix.channel}`}
+                      className="strip-pan-slider"
+                      aria-label={`CH ${mix.channel + 1} Pan`}
+                      max={1}
+                      min={-1}
+                      onChange={(event) =>
+                        updateChannel(mix.channel, {
+                          pan: Number(event.currentTarget.value),
+                        })
+                      }
+                      step={0.05}
+                      type="range"
+                      value={mix.pan}
+                    />
+                  </div>
+
+                  {/* Vertical Volume Fader */}
+                  <div className="strip-fader-container">
+                    <input
+                      className="strip-fader"
+                      aria-label={`CH ${mix.channel + 1} Volume`}
+                      max={1}
+                      min={0}
+                      onChange={(event) =>
+                        updateChannel(mix.channel, {
+                          volume: Number(event.currentTarget.value),
+                        })
+                      }
+                      step={0.01}
+                      type="range"
+                      value={mix.volume}
+                    />
+                  </div>
+
+                  {/* Mute and Solo Hardware buttons */}
+                  <div className="strip-buttons">
+                    <button
+                      className={`strip-btn ${mix.muted ? 'mute-active' : ''}`}
+                      onClick={() => updateChannel(mix.channel, { muted: !mix.muted })}
+                      type="button"
+                      title="Mute"
+                    >
+                      M
+                    </button>
+                    <button
+                      className={`strip-btn ${mix.solo ? 'solo-active' : ''}`}
+                      onClick={() => updateChannel(mix.channel, { solo: !mix.solo })}
+                      type="button"
+                      title="Solo"
+                    >
+                      S
+                    </button>
+                  </div>
+
+                  {/* Footer telemetry displaying note event triggers */}
+                  <div className="strip-footer">
+                    <span>{channel?.noteCount ?? 0} NOTES</span>
+                  </div>
+                </>
+              )}
             </div>
           )
         })}
