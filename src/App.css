@@ -1297,14 +1297,15 @@ input[type='range'] {
 /* Premium Hardware Mixer Modules */
 .mixer-deck {
   display: flex;
-  gap: 12px;
-  padding: 16px;
+  gap: 10px;
+  padding: 12px;
   overflow-x: auto;
   overflow-y: hidden;
   background: rgba(185, 199, 139, 0.45); /* Matching dashboard green */
   border-top: 1px solid rgba(29, 38, 22, 0.28);
-  min-height: 250px;
+  min-height: 220px;
   scroll-behavior: smooth;
+  justify-content: flex-start !important; /* Force justify left */
 }
 
 /* Custom scrollbar for the mixer deck */
@@ -1324,7 +1325,7 @@ input[type='range'] {
 
 /* Individual Channel Strip Module */
 .channel-strip {
-  flex: 0 0 108px;
+  flex: 0 0 94px; /* Shrunked from 108px for sleeker horizontal space */
   display: flex;
   flex-direction: column;
   background: #1e251a; /* Dark industrial slate */
@@ -1332,11 +1333,11 @@ input[type='range'] {
   box-shadow: 
     inset 0 1px 1px rgba(255, 255, 255, 0.08),
     0 4px 10px rgba(0, 0, 0, 0.4);
-  padding: 10px 8px;
+  padding: 8px 5px; /* Shrunked padding */
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   position: relative;
-  min-height: 220px;
+  min-height: 195px; /* Shrunked height */
 }
 
 /* Active channel strip styling */
@@ -1410,47 +1411,56 @@ input[type='range'] {
   color: #ffffff;
 }
 
-.strip-inst {
-  font-family: var(--font-sans);
-  font-size: 0.58rem;
+/* Interactive Instrument Selector dropdown */
+.strip-inst-select {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 0.5rem;
   font-weight: 800;
   color: #8fa382;
+  background: #11140f;
+  border: 1px solid #333d29;
+  height: 18px;
+  text-align-last: center;
+  cursor: pointer;
+  outline: none;
   text-transform: uppercase;
-  max-width: 92px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  text-align: center;
 }
 
-/* Faders and Knobs */
+.strip-inst-select:hover,
+.strip-inst-select:focus-visible {
+  border-color: var(--accent-orange);
+  color: #ffffff;
+}
+
+/* Shrunken Faders and Knobs */
 .strip-fader-container {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 90px;
-  padding: 4px 0;
+  min-height: 70px; /* Shrunked from 90px */
+  padding: 2px 0;
 }
 
 .strip-fader {
   -webkit-appearance: none;
   appearance: none;
-  width: 12px;
-  height: 84px;
+  width: 10px;
+  height: 62px; /* Shrunked height fader */
   background: #11140f;
   border: 1px solid #333d29;
   outline: none;
-  writing-mode: vertical-lr; /* Vertical slider */
-  direction: rtl; /* Makes top increase values, bottom decrease */
+  writing-mode: vertical-lr; /* Vertical fader */
+  direction: rtl; /* Makes top increase, bottom decrease */
   cursor: pointer;
 }
 
 .strip-fader::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 22px;
-  height: 10px;
+  width: 18px; /* Shrunked width */
+  height: 8px; /* Shrunked height */
   background: var(--accent-orange);
   border: 1.5px solid #000000;
   box-shadow: 0 2px 4px rgba(0,0,0,0.5);
@@ -1459,8 +1469,8 @@ input[type='range'] {
 }
 
 .strip-fader::-moz-range-thumb {
-  width: 22px;
-  height: 10px;
+  width: 18px;
+  height: 8px;
   background: var(--accent-orange);
   border: 1.5px solid #000000;
   box-shadow: 0 2px 4px rgba(0,0,0,0.5);
@@ -1472,20 +1482,20 @@ input[type='range'] {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   width: 100%;
 }
 
 .strip-pan-label {
   font-family: var(--font-mono);
-  font-size: 0.5rem;
+  font-size: 0.48rem;
   font-weight: 800;
   color: var(--ink-muted);
 }
 
 .strip-pan-slider {
   width: 100%;
-  height: 4px;
+  height: 3px;
   background: #11140f;
   outline: none;
   accent-color: var(--accent-blue);
@@ -1495,7 +1505,7 @@ input[type='range'] {
 /* Mute/Solo button cluster */
 .strip-buttons {
   display: flex;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
   justify-content: center;
 }
@@ -1503,7 +1513,7 @@ input[type='range'] {
 .strip-btn {
   flex: 1;
   font-family: var(--font-mono);
-  font-size: 0.58rem;
+  font-size: 0.55rem;
   font-weight: 900;
   color: #8fa382;
   background: #25331e;
@@ -1538,7 +1548,7 @@ input[type='range'] {
 /* Strip Footer notes */
 .strip-footer {
   font-family: var(--font-mono);
-  font-size: 0.52rem;
+  font-size: 0.5rem;
   font-weight: 800;
   color: #566051;
   border-top: 1px dashed rgba(255, 255, 255, 0.08);

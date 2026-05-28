@@ -146,6 +146,7 @@ export const getRenderableNotes = (
           pitch: clamp(note.midi + settings.transpose, 12, 120),
           renderDuration,
           renderTime,
+          instrument: mix.instrument || 'default',
         },
       ]
     })

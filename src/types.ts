@@ -46,6 +46,7 @@ export interface ChannelMix {
   pan: number
   solo: boolean
   volume: number
+  instrument?: string
 }
 
 export interface RenderSettings {
@@ -63,4 +64,5 @@ export interface RenderableNote extends MidiNote {
   pitch: number
   renderDuration: number
   renderTime: number
+  instrument?: string
 }

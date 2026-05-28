@@ -44,15 +44,28 @@ export function Mixer({ channels, mixer, onChange }: MixerProps) {
                 </div>
               ) : (
                 <>
-                  {/* Module Header / LED and Channel Details */}
+                  {/* Module Header / LED and Instrument Selector */}
                   <div className="strip-header">
                     <div className="strip-led-row">
                       <span className="strip-led" aria-hidden="true" />
                       <span className="strip-num">CH{(mix.channel + 1).toString().padStart(2, '0')}</span>
                     </div>
-                    <div className="strip-inst" title={channel?.instrumentName}>
-                      {channel?.instrumentName ?? 'empty'}
-                    </div>
+                    
+                    {/* Live Instrument Voice Overrider */}
+                    <select
+                      className="strip-inst-select"
+                      aria-label={`CH ${mix.channel + 1} Instrument`}
+                      value={mix.instrument || 'default'}
+                      onChange={(e) => updateChannel(mix.channel, { instrument: e.target.value })}
+                    >
+                      <option value="default">⚙️ {channel?.instrumentName || 'Auto'}</option>
+                      <option value="square50">Pulse 50%</option>
+                      <option value="square25">Pulse 25%</option>
+                      <option value="triangle">Tri Bass</option>
+                      <option value="scc">SCC Wave</option>
+                      <option value="fm">FM Brass</option>
+                      <option value="sine">Sine Lead</option>
+                    </select>
                   </div>
 
                   {/* Horizontal PAN slider */}
@@ -77,7 +90,7 @@ export function Mixer({ channels, mixer, onChange }: MixerProps) {
                     />
                   </div>
 
-                  {/* Vertical Volume Fader */}
+                  {/* Shrunken Vertical Volume Fader */}
                   <div className="strip-fader-container">
                     <input
                       className="strip-fader"

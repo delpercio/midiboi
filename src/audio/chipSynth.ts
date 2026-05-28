@@ -158,7 +158,9 @@ const scheduleChipNote = (
 
   configureOscillator(context, oscillator, settings.mode, note)
   
-  if (settings.mode === 'opll') {
+  const voice = note.instrument && note.instrument !== 'default' ? note.instrument : settings.mode
+
+  if (voice === 'opll' || voice === 'fm') {
     filter.type = 'lowpass'
     // Dynamic resonant filter tracking notes pitch
     const multiplier = ((settings.filterCutoff - 450) / (10000 - 450)) * 4 + 0.5
@@ -182,7 +184,8 @@ const scheduleChipNote = (
   gain.connect(panner)
   panner.connect(destination)
 
-  applyEnvelope(gain.gain, start, end, note.gain * note.velocity * modeGain(settings.mode))
+  const voiceMode = note.instrument && note.instrument !== 'default' ? note.instrument : settings.mode
+  applyEnvelope(gain.gain, start, end, note.gain * note.velocity * modeGain(voiceMode))
   oscillator.start(start)
   oscillator.stop(end + 0.02)
 
@@ -228,26 +231,39 @@ const configureOscillator = (
 ): void => {
   oscillator.frequency.value = midiToFrequency(note.pitch)
 
-  if (mode === 'scc') {
+  const voice = note.instrument && note.instrument !== 'default' ? note.instrument : mode
+
+  if (voice === 'scc') {
     oscillator.setPeriodicWave(createSccWave(context))
     oscillator.detune.value = (note.channel % 3) * 3
     return
   }
 
-  if (mode === 'famicom') {
-    oscillator.type = note.channel % 3 === 2 ? 'triangle' : 'square'
+  if (voice === 'famicom' || voice === 'square50') {
+    oscillator.type = 'square'
     oscillator.detune.value = note.channel % 2 === 0 ? -4 : 4
     return
   }
 
-  if (mode === 'triangle') {
+  if (voice === 'square25') {
+    oscillator.type = 'square'
+    oscillator.detune.value = note.channel % 2 === 0 ? -8 : 8
+    return
+  }
+
+  if (voice === 'triangle') {
     oscillator.type = 'triangle'
     return
   }
 
-  if (mode === 'opll') {
+  if (voice === 'opll' || voice === 'fm') {
     oscillator.type = 'sawtooth'
     oscillator.detune.value = (note.channel % 2 === 0 ? -8 : 8)
+    return
+  }
+
+  if (voice === 'sine') {
+    oscillator.type = 'sine'
     return
   }
 
@@ -320,8 +336,8 @@ const applyEnvelope = (
   gain.linearRampToValueAtTime(0.0001, end)
 }
 
-const modeGain = (mode: ChipMode): number => {
-  if (mode === 'opll') {
+const modeGain = (mode: string): number => {
+  if (mode === 'opll' || mode === 'fm') {
     return 0.92
   }
 
