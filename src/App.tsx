@@ -135,27 +135,45 @@ function App() {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
-  const loadDemo = useCallback(() => {
-    stopPlayback()
-    const demo = createDemoSong()
-    setSong(demo)
-    setFileSize(null)
-    setMixer(createInitialMix(demo.channels))
-    setError(null)
-    setCurrentSongId('demo')
-  }, [stopPlayback])
 
   const loadSongById = useCallback(async (songId: string) => {
+    const wasPlaying = transportState === 'playing'
     setCurrentSongId(songId)
+    stopPlayback()
+
     if (songId === 'demo') {
-      loadDemo()
+      const demo = createDemoSong()
+      setSong(demo)
+      setFileSize(null)
+      setMixer(createInitialMix(demo.channels))
+      setError(null)
+      if (wasPlaying) {
+        setTimeout(async () => {
+          try {
+            const engine = engineRef.current
+            if (engine) {
+              await engine.play(demo, settings, createInitialMix(demo.channels), 0)
+              setAnalyser(engine.getAnalyser())
+              setTransportState('playing')
+            }
+          } catch (playError) {
+            console.error('Auto-playback failed:', playError)
+          }
+        }, 50)
+      }
       return
     }
+
     try {
       setError(null)
-      stopPlayback()
-      const url = `${import.meta.env.BASE_URL}songs/${songId}.mid`
-      const response = await fetch(url)
+      const baseUrl = import.meta.env.BASE_URL || '/'
+      let response = await fetch(`${baseUrl}songs/${songId}.mid`)
+      if (!response.ok) {
+        response = await fetch(`songs/${songId}.mid`)
+      }
+      if (!response.ok) {
+        response = await fetch(`/songs/${songId}.mid`)
+      }
       if (!response.ok) {
         throw new Error(`Failed to load song: ${response.statusText}`)
       }
@@ -165,15 +183,32 @@ function App() {
       if (nextSong.notes.length === 0) {
         throw new Error('This MIDI did not contain any note events.')
       }
+
       setSong(nextSong)
       setFileSize(buffer.byteLength)
-      setMixer(createInitialMix(nextSong.channels))
+      const nextMixer = createInitialMix(nextSong.channels)
+      setMixer(nextMixer)
+
+      if (wasPlaying) {
+        setTimeout(async () => {
+          try {
+            const engine = engineRef.current
+            if (engine) {
+              await engine.play(nextSong, settings, nextMixer, 0)
+              setAnalyser(engine.getAnalyser())
+              setTransportState('playing')
+            }
+          } catch (playError) {
+            console.error('Auto-playback failed:', playError)
+          }
+        }, 50)
+      }
     } catch (loadError) {
       setError(
         loadError instanceof Error ? loadError.message : 'The MIDI could not load.',
       )
     }
-  }, [stopPlayback, loadDemo])
+  }, [stopPlayback, settings, transportState])
 
   const loadFile = async (file: File) => {
     try {
