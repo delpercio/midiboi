@@ -25,6 +25,14 @@
       "destination": "/assets/:path*"
     },
     {
+      "source": "/midiboi",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/midiboi/",
+      "destination": "/index.html"
+    },
+    {
       "source": "/midiboi/:path*",
       "destination": "/index.html"
     },
