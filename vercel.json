@@ -25,6 +25,14 @@
       "destination": "/assets/:path*"
     },
     {
+      "source": "/midiboi/songs/:path*",
+      "destination": "/songs/:path*"
+    },
+    {
+      "source": "/midiboi/favicon.svg",
+      "destination": "/favicon.svg"
+    },
+    {
       "source": "/midiboi",
       "destination": "/index.html"
     },
