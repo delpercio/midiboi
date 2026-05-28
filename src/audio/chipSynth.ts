@@ -157,9 +157,19 @@ const scheduleChipNote = (
   const end = start + duration
 
   configureOscillator(context, oscillator, settings.mode, note)
-  filter.type = settings.mode === 'opll' ? 'bandpass' : 'lowpass'
-  filter.frequency.value = settings.filterCutoff
-  filter.Q.value = settings.mode === 'opll' ? 5 : 1.4
+  
+  if (settings.mode === 'opll') {
+    filter.type = 'lowpass'
+    // Dynamic resonant filter tracking notes pitch
+    const multiplier = ((settings.filterCutoff - 450) / (10000 - 450)) * 4 + 0.5
+    filter.frequency.value = Math.min(18000, midiToFrequency(note.pitch) * multiplier)
+    filter.Q.value = 2.5
+  } else {
+    filter.type = 'lowpass'
+    filter.frequency.value = settings.filterCutoff
+    filter.Q.value = 1.6
+  }
+
   panner.pan.value = note.pan
 
   oscillator.connect(filter)
@@ -235,6 +245,12 @@ const configureOscillator = (
     return
   }
 
+  if (mode === 'opll') {
+    oscillator.type = 'sawtooth'
+    oscillator.detune.value = (note.channel % 2 === 0 ? -8 : 8)
+    return
+  }
+
   oscillator.type = 'sine'
   oscillator.detune.value = Math.sin(note.renderTime * 2) * 7
 }
@@ -276,7 +292,7 @@ const createBitCrusher = (
   }
 
   const curve = new Float32Array(2048)
-  const steps = Math.round(64 - amount * 52)
+  const steps = Math.max(2, Math.round(64 - amount * 61))
 
   for (let index = 0; index < curve.length; index += 1) {
     const x = (index / (curve.length - 1)) * 2 - 1
@@ -306,7 +322,7 @@ const applyEnvelope = (
 
 const modeGain = (mode: ChipMode): number => {
   if (mode === 'opll') {
-    return 0.72
+    return 0.92
   }
 
   if (mode === 'triangle') {

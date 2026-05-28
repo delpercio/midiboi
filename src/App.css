@@ -1192,3 +1192,114 @@ input[type='range'] {
     padding-top: 6px;
   }
 }
+
+/* Premium Synth Rotary Knobs */
+.knobs-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 12px;
+  padding: 16px 10px;
+}
+
+.knob-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 68px; /* Fixed width for alignment */
+}
+
+.knob-label {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+}
+
+.knob-body {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  background: #151713; /* Ink base */
+  border: 2px solid #000000;
+  border-radius: 50%;
+  cursor: ns-resize;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.1),
+    0 3px 6px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.knob-body:hover,
+.knob-body.dragging {
+  border-color: var(--accent-orange);
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 255, 255, 0.15),
+    0 0 10px rgba(255, 69, 0, 0.35);
+}
+
+.knob-body:focus-visible {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+/* Rotary Pointer Dial Indicator */
+.knob-pointer {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.knob-pointer::before {
+  content: '';
+  position: absolute;
+  top: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 3px;
+  height: 11px;
+  background: #ffffff; /* Core tick mark */
+  border-radius: 1px;
+}
+
+/* Color styles for indicators */
+.knob-orange::before {
+  background: var(--accent-orange) !important;
+}
+.knob-yellow::before {
+  background: var(--accent-yellow) !important;
+}
+.knob-blue::before {
+  background: var(--accent-blue) !important;
+}
+.knob-cyan::before {
+  background: #00ffcc !important;
+}
+
+/* Center Cap screw / tech circle */
+.knob-cap {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: #252822;
+  border: 1.5px solid #000000;
+  border-radius: 50%;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.15);
+}
+
+.knob-value {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--ink);
+  min-height: 14px;
+  text-align: center;
+}
+
